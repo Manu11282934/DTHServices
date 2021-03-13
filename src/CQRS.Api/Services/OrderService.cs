@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -46,22 +47,22 @@ namespace CQRS.Api.Controllers
         }
 
 
-        [FunctionName(FunctionName.UserProfileService.GetProfile)]
-        public async Task<IActionResult> GetProfile([HttpTrigger(AuthorizationLevel.Function, "get", Route = "{clientId}/Profile")] HttpRequest req, string clientId)
-        {
-            var userIdFromRequest = req.Query["id"];
-            return await HandleExceptionAsync(async () =>
-            {
-                var authTokenToValidate = req.GetAuthorizationHeader();
-                GetUserProfileRequest ProfileRequest = new GetUserProfileRequest
-                {
-                    AuthToken = authTokenToValidate,
-                    ClientId = clientId,
-                    UserIdFromRequest = userIdFromRequest
-                };
-                var response = await _mediator.Send(ProfileRequest);
-                return response.ToHttpResponse();
-            }, req);
-        }
+        //[FunctionName(FunctionName.UserProfileService.GetProfile)]
+        //public async Task<IActionResult> GetProfile([HttpTrigger(AuthorizationLevel.Function, "get", Route = "{clientId}/Profile")] HttpRequest req, string clientId)
+        //{
+        //    var userIdFromRequest = req.Query["id"];
+        //    return await HandleExceptionAsync(async () =>
+        //    {
+        //        var authTokenToValidate = req.GetAuthorizationHeader();
+        //        GetUserProfileRequest ProfileRequest = new GetUserProfileRequest
+        //        {
+        //            AuthToken = authTokenToValidate,
+        //            ClientId = clientId,
+        //            UserIdFromRequest = userIdFromRequest
+        //        };
+        //        var response = await _mediator.Send(ProfileRequest);
+        //        return response.ToHttpResponse();
+        //    }, req);
+        //}
     }
 }
