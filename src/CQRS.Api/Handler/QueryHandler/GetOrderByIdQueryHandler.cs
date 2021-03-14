@@ -1,6 +1,8 @@
 ﻿using CQRS.Api.Configurations;
+using CQRS.Api.Models;
 using CQRS.Api.RequestModel;
 using CQRS.Api.ResponseModel;
+using CQRS.Api.Security.AuthToken;
 using MediatR;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -16,15 +18,24 @@ namespace CQRS.Api.Handler.QueryHandler
     public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdRequestModel, GetOrderByIdResponseModel>
     {
         private readonly AppSettings _appSettings;
+        private readonly IUserAuthTokenBuilder _userAuthTokenBuilder;
 
 
 
-        public GetOrderByIdQueryHandler( IOptions<AppSettings> appSettings)
-        {           
+        public GetOrderByIdQueryHandler(IUserAuthTokenBuilder userAuthTokenBuilder,IOptions<AppSettings> appSettings)
+        {
+            _userAuthTokenBuilder =userAuthTokenBuilder;
             _appSettings = appSettings.Value;
         }
         public async Task<GetOrderByIdResponseModel> Handle(GetOrderByIdRequestModel request, CancellationToken cancellationToken)
         {
+            var userDetails = new ApplicationUser()
+            {              
+                Email = "order",             
+                LastName = "person",             
+                FirstName = "product", 
+            };
+            var result=_userAuthTokenBuilder.IssueToken(userDetails);
            string token = generateJwtToken();
             var orderDetails = new GetOrderByIdResponseModel()
             {

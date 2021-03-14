@@ -1,19 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using MediatR;
 using System.Reflection;
 using CQRS.Api.Configurations;
+using CQRS.Api.Security.AuthToken;
+using CQRS.Api.Security.AuthToken.Jwt;
+using CQRS.Api.Repositories.Admin;
+using CQRS.Api.Repositories.Connections;
+using CQRS.Api.Repositories.db;
+using CQRS.Api.Behaviours.Behaviours;
+using CQRS.Api.RequestModel.GetConnections;
+using CQRS.Api.ResponseModel.GetConnections;
 
 namespace CQRS.Api
 {
@@ -31,17 +32,31 @@ namespace CQRS.Api
         {
 
             services.AddControllers();
+            services.AddTransient<IUserAuthTokenBuilder, UserAuthTokenBuilder>();
+            services.AddTransient<IJwtTokenHandler, HS256JwtTokenHandler>();
+            services.AddTransient<IAdminRepository, AdminRepository>();
+            services.AddTransient<IConnectionsRepository, ConnectionRepository>();
+            services.AddTransient<IMongoDbClientConfigurations, MongoDbClientConfigurations>();
+
+            services.AddTransient<IUserAuthTokenValidator, UserAuthTokenValidator>();           
+            services.AddTransient(typeof(IPipelineBehavior<GetAllConnectionsRequestModel, GetAllConnectionsResponseModel>), typeof(ValidateAuthTokenBehavior<GetAllConnectionsRequestModel, GetAllConnectionsResponseModel>));
+
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "CQRS.Api", Version = "v1" });
             });
 
-            services.AddMediatR(Assembly.GetExecutingAssembly());
+            services.AddMediatR(Assembly.GetExecutingAssembly());          
+            
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+            
         }
+      
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+
+            // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+            public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {

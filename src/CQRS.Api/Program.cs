@@ -13,7 +13,15 @@ namespace CQRS.Api
     {
         public static void Main(string[] args)
         {
+            try
+            {
+
             CreateHostBuilder(args).Build().Run();
+            }
+            catch(Exception ex)
+            {
+
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
